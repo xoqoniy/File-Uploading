@@ -3,84 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Uploading</title>
+    <title>File Uploading and Downloading</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f4f4f4;
-        }
-
-        h1 {
-            margin-bottom: 20px;
-        }
-
-        form {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-
-        label {
-            display: block;
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
-
-        input[type="file"] {
-            display: none;
-        }
-
-        .file-label {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: #fff;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .file-label:hover {
-            background-color: #0056b3;
-        }
-
-        input[type="submit"] {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #28a745;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 20px;
-        }
-
-        input[type="submit"]:hover {
-            background-color: #218838;
-        }
+        /* Your CSS styles */
     </style>
 </head>
 <body>
-    <h1>File Uploading</h1>
+    <h1>File Uploading and Downloading</h1>
 
-    <form>
+    <form id="uploadForm">
         <label for="file" class="file-label">Select a file</label>
-        <input type="file" id="file" name="file">
-        <input type="submit" value="Submit">
+        <input type="file" id="file" name="file" style="display: none;"> <!-- Hide the file input initially -->
+        <input type="submit" value="Upload">
     </form>
 
+    <div class="download-section">
+        <label for="fileId" class="download-label">Enter File ID</label>
+        <input type="text" id="fileId">
+        <button class="download-button" onclick="downloadFile()">Download</button>
+    </div>
+
     <script>
-        document.querySelector('.file-label').addEventListener('click', function() {
-            document.querySelector('#file').click();
+        document.getElementById('file').addEventListener('change', function(event) {
+            event.preventDefault(); // Prevent default action of file input change
+            var fileInput = event.target;
+            if (fileInput.files.length > 0) {
+                console.log('File selected:', fileInput.files[0].name);
+            }
         });
+
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent form submission
+            
+            var formData = new FormData(); // Create a FormData object
+            var fileInput = document.getElementById('file');
+            if (fileInput.files.length === 0) {
+                alert('Please select a file to upload.');
+                return;
+            }
+            formData.append('file', fileInput.files[0]); // Append the file to FormData
+            
+            console.log('Preparing to upload file:', fileInput.files[0].name);
+
+            // Send a POST request to the backend API
+            fetch('https://2e0d-213-230-87-132.ngrok-free.app/api/Files/uploading', {
+                method: 'POST',
+                body: formData // Set the FormData as the request body
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.status + ' ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('File uploaded:', data);
+                alert('File uploaded successfully!');
+            })
+            .catch(error => {
+                console.error('Error uploading file:', error);
+                alert('Error uploading file. Please try again.');
+            });
+        });
+
+        function downloadFile() {
+            var fileId = document.getElementById('fileId').value;
+            if (!fileId) {
+                alert('Please enter a file ID.');
+                return;
+            }
+
+            fetch(`https://2e0d-213-230-87-132.ngrok-free.app/api/Files/${fileId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `${fileId}.file`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                console.error('Error downloading file:', error);
+                alert('Error downloading file. Please try again.');
+            });
+        }
     </script>
 </body>
 </html>
