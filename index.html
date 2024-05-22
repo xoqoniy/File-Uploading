@@ -5,36 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>File Uploading and Downloading</title>
     <style>
-        /* Your CSS styles */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+        }
+        .container {
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            width: 300px;
+            text-align: center;
+        }
+        input[type="file"], input[type="text"] {
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        input[type="submit"], button {
+            margin-top: 10px;
+            padding: 10px;
+            width: 100%;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
-    <h1>File Uploading and Downloading</h1>
+    <div class="container">
+        <h2>Upload File</h2>
+        <form id="uploadForm">
+            <input type="file" id="file" name="file" required>
+            <input type="submit" value="Upload">
+        </form>
+    </div>
 
-    <form id="uploadForm">
-        <label for="file" class="file-label">Select a file</label>
-        <input type="file" id="file" name="file" style="display: none;"> <!-- Hide the file input initially -->
-        <input type="submit" value="Upload">
-    </form>
-
-    <div class="download-section">
-        <label for="fileId" class="download-label">Enter File ID</label>
-        <input type="text" id="fileId">
-        <button class="download-button" onclick="downloadFile()">Download</button>
+    <div class="container">
+        <h2>Download File</h2>
+        <input type="text" id="fileId" placeholder="Enter File ID" required>
+        <button onclick="downloadFile()">Download</button>
     </div>
 
     <script>
-        document.getElementById('file').addEventListener('change', function(event) {
-            event.preventDefault(); // Prevent default action of file input change
-            var fileInput = event.target;
-            if (fileInput.files.length > 0) {
-                console.log('File selected:', fileInput.files[0].name);
-            }
-        });
-
         document.getElementById('uploadForm').addEventListener('submit', function(event) {
             event.preventDefault(); // Prevent form submission
-            
+
             var formData = new FormData(); // Create a FormData object
             var fileInput = document.getElementById('file');
             if (fileInput.files.length === 0) {
@@ -42,11 +59,9 @@
                 return;
             }
             formData.append('file', fileInput.files[0]); // Append the file to FormData
-            
-            console.log('Preparing to upload file:', fileInput.files[0].name);
 
             // Send a POST request to the backend API
-            fetch('https://f758-213-230-87-132.ngrok-free.app/api/Files/upload', {
+            fetch('https://2244-84-54-73-114.ngrok-free.app/api/Files/upload', {
                 method: 'POST',
                 body: formData // Set the FormData as the request body
             })
@@ -73,7 +88,7 @@
                 return;
             }
 
-            fetch(`https://2e0d-213-230-87-132.ngrok-free.app/api/Files/${fileId}`)
+            fetch(`https://2244-84-54-73-114.ngrok-free.app/api/Files/${fileId}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok ' + response.statusText);
