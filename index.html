@@ -88,28 +88,70 @@
                 return;
             }
 
-            fetch(`https://2244-84-54-73-114.ngrok-free.app/api/Files/${fileId}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok ' + response.statusText);
-                }
-                return response.blob();
-            })
-            .then(blob => {
-                var url = window.URL.createObjectURL(blob);
-                var a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = `${fileId}.file`;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-            })
-            .catch(error => {
-                console.error('Error downloading file:', error);
-                alert('Error downloading file. Please try again.');
-            });
+
+          
+        fetch(`https://afb3-84-54-70-178.ngrok-free.app/api/Files/${fileId}`, {
+        headers: {
+            'ngrok-skip-browser-warning': 'any-value'
         }
+        })
+        .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const contentType = response.headers.get('Content-Type');
+        const contentDisposition = response.headers.get('Content-Disposition');
+        let filename = 'downloadedFile';
+
+        // Parse filename from Content-Disposition header if available
+        if (contentDisposition && contentDisposition.includes('filename=')) {
+            const filenameMatch = contentDisposition.match(/filename="(.+?)"/);
+            if (filenameMatch.length > 1) {
+            filename = filenameMatch[1];
+            }
+        } else {
+            // Determine the file extension based on content type if filename is not present
+            let extension = '';
+            switch (contentType) {
+            case 'application/pdf':
+                extension = 'pdf';
+                break;
+            case 'image/jpeg':
+                extension = 'jpg';
+                break;
+            case 'image/png':
+                extension = 'png';
+                break;
+            case 'text/plain':
+                extension = 'txt';
+                break;
+            case 'application/zip':
+                extension = 'zip';
+                break;
+            // Add more content types and extensions as needed
+            default:
+                extension = ''; // No extension if unknown content type
+            }
+            filename = `downloadedFile${extension ? `.${extension}` : ''}`;
+        }
+
+        return response.blob().then(blob => ({ blob, filename }));
+        })
+        .then(({ blob, filename }) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = filename; // Use the determined filename
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        })
+        .catch(error => console.error('Error:', error));
+
+      }
     </script>
 </body>
 </html>
